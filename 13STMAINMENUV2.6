@@ -1,0 +1,382 @@
+--[[
+    13ST CRIPZ MENU - VERSION 2.5.0 (FULLY FUNCTIONAL)
+    - Custom GUI (No Library / Raw Elements)
+    - Draggable Menu & Draggable Toggle Button
+    - Working Exploits & Roleplay Tools
+--]]
+
+local UserInputService = game:GetService("UserInputService")
+local TweenService = game:GetService("TweenService")
+local RunService = game:GetService("RunService")
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+
+-- Global States para sa Features
+local States = {
+    InfJump = false,
+    Noclip = false,
+    Fly = false,
+    ESP = false,
+    AutoFarm = false,
+    WalkSpeed = 16,
+    JumpPower = 50
+}
+
+-- Create ScreenGui
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Name = "13ST_Cripz_Menu_V2"
+ScreenGui.ResetOnSpawn = false
+ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+
+-- Protect UI
+if syn and syn.protect_gui then syn.protect_gui(ScreenGui) ScreenGui.Parent = game:GetService("CoreGui")
+elseif gethui then ScreenGui.Parent = gethui()
+else ScreenGui.Parent = LocalPlayer:WaitForChild("PlayerGui") end
+
+-- ====================================================================
+-- UNIVERSAL DRAG FUNCTION
+-- ====================================================================
+local function makeDraggable(frame)
+    local dragging, dragInput, dragStart, startPos
+    frame.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+            dragging = true; dragStart = input.Position; startPos = frame.Position
+            input.Changed:Connect(function()
+                if input.UserInputState == Enum.UserInputState.End then dragging = false end
+            end)
+        end
+    end)
+    frame.InputChanged:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then dragInput = input end
+    end)
+    UserInputService.InputChanged:Connect(function(input)
+        if input == dragInput and dragging then
+            local delta = input.Position - dragStart
+            frame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+        end
+    end)
+end
+
+-- ====================================================================
+-- MAIN WINDOW SYSTEM
+-- ====================================================================
+local MainFrame = Instance.new("Frame")
+MainFrame.Size = UDim2.new(0, 750, 0, 500)
+MainFrame.Position = UDim2.new(0.5, -375, 0.5, -250)
+MainFrame.BackgroundColor3 = Color3.fromRGB(15, 12, 22)
+MainFrame.BorderSizePixel = 0
+MainFrame.Parent = ScreenGui
+
+local MainCorner = Instance.new("UICorner") MainCorner.CornerRadius = UDim.new(0, 12) MainCorner.Parent = MainFrame
+local MainStroke = Instance.new("UIStroke") MainStroke.Color = Color3.fromRGB(50, 30, 80) MainStroke.Thickness = 1.5 MainStroke.Parent = MainFrame
+makeDraggable(MainFrame)
+
+-- ====================================================================
+-- TOGGLE BUTTON (DRAGGABLE)
+-- ====================================================================
+local ToggleButton = Instance.new("Frame")
+ToggleButton.Name = "MenuToggleButton"
+ToggleButton.Size = UDim2.new(0, 60, 0, 60)
+ToggleButton.Position = UDim2.new(0, 20, 0, 20)
+ToggleButton.BackgroundColor3 = Color3.fromRGB(22, 18, 32)
+ToggleButton.Parent = ScreenGui
+
+local TBCorner = Instance.new("UICorner") TBCorner.CornerRadius = UDim.new(1, 0) TBCorner.Parent = ToggleButton
+local TBStroke = Instance.new("UIStroke") TBStroke.Color = Color3.fromRGB(140, 60, 255) TBStroke.Thickness = 2 TBStroke.Parent = ToggleButton
+makeDraggable(ToggleButton)
+
+local RealButton = Instance.new("TextButton")
+RealButton.Size = UDim2.new(1, 0, 1, 0)
+RealButton.BackgroundTransparency = 1
+RealButton.Text = "13ST"
+RealButton.Font = Enum.Font.GothamBold
+RealButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+RealButton.TextSize = 14
+RealButton.Parent = ToggleButton
+
+RealButton.MouseButton1Click:Connect(function()
+    MainFrame.Visible = not MainFrame.Visible
+end)
+
+-- ====================================================================
+-- HEADER ELEMENTS
+-- ====================================================================
+local TopHeader = Instance.new("Frame")
+TopHeader.Size = UDim2.new(1, 0, 0, 50)
+TopHeader.BackgroundTransparency = 1
+TopHeader.Parent = MainFrame
+
+local Title = Instance.new("TextLabel")
+Title.Size = UDim2.new(0, 200, 1, 0)
+Title.Position = UDim2.new(0, 20, 0, 0)
+Title.Text = "13ST CRIPZ <font color='rgb(160, 80, 255)'>MENU</font>"
+Title.Font = Enum.Font.GothamBold; Title.TextSize = 22; Title.TextColor3 = Color3.fromRGB(255, 255, 255); Title.RichText = true; Title.TextXAlignment = Enum.TextXAlignment.Left; Title.BackgroundTransparency = 1; Title.Parent = TopHeader
+
+local StatusLabel = Instance.new("TextLabel")
+StatusLabel.Size = UDim2.new(0, 150, 1, 0)
+StatusLabel.Position = UDim2.new(0, 220, 0, 0)
+StatusLabel.Text = "WELCOME, " .. LocalPlayer.Name .. "\n<font color='rgb(80, 220, 100)'>Status: Active</font>"
+StatusLabel.Font = Enum.Font.GothamSemibold; StatusLabel.TextSize = 12; StatusLabel.TextColor3 = Color3.fromRGB(180, 180, 180); StatusLabel.RichText = true; StatusLabel.TextXAlignment = Enum.TextXAlignment.Left; StatusLabel.BackgroundTransparency = 1; StatusLabel.Parent = TopHeader
+
+local Sidebar = Instance.new("Frame")
+Sidebar.Size = UDim2.new(0, 180, 1, -70); Sidebar.Position = UDim2.new(0, 15, 0, 55); Sidebar.BackgroundColor3 = Color3.fromRGB(22, 18, 32); Sidebar.Parent = MainFrame
+local SidebarCorner = Instance.new("UICorner") SidebarCorner.CornerRadius = UDim.new(0, 8) SidebarCorner.Parent = Sidebar
+local SidebarList = Instance.new("UIListLayout") SidebarList.Padding = UDim.new(0, 5); SidebarList.HorizontalAlignment = Enum.HorizontalAlignment.Center; SidebarList.SortOrder = Enum.SortOrder.LayoutOrder; SidebarList.Parent = Sidebar
+local SidebarPadding = Instance.new("UIPadding") SidebarPadding.PaddingTop = UDim.new(0, 10) SidebarPadding.Parent = Sidebar
+
+local Container = Instance.new("Frame")
+Container.Size = UDim2.new(1, -220, 1, -70); Container.Position = UDim2.new(0, 205, 0, 55); Container.BackgroundTransparency = 1; Container.Parent = MainFrame
+
+-- ====================================================================
+-- CREATION UTILITIES
+-- ====================================================================
+local FirstTab = true
+local function CreateTab(name)
+    local TabButton = Instance.new("TextButton")
+    TabButton.Size = UDim2.new(0, 160, 0, 35); TabButton.Text = "  " .. name:upper(); TabButton.Font = Enum.Font.GothamSemibold; TabButton.TextSize = 14
+    TabButton.TextColor3 = FirstTab and Color3.fromRGB(255, 255, 255) or Color3.fromRGB(150, 150, 150)
+    TabButton.BackgroundColor3 = FirstTab and Color3.fromRGB(55, 25, 95) or Color3.fromRGB(28, 24, 40)
+    TabButton.TextXAlignment = Enum.TextXAlignment.Left; TabButton.Parent = Sidebar
+    local ButtonCorner = Instance.new("UICorner") ButtonCorner.CornerRadius = UDim.new(0, 6) ButtonCorner.Parent = TabButton
+
+    local TabPage = Instance.new("ScrollingFrame")
+    TabPage.Size = UDim2.new(1, 0, 1, 0); TabPage.BackgroundTransparency = 1; TabPage.ScrollBarThickness = 4; TabPage.ScrollBarImageColor3 = Color3.fromRGB(80, 40, 140)
+    TabPage.Visible = FirstTab; TabPage.Parent = Container
+    local Grid = Instance.new("UIGridLayout") Grid.CellSize = UDim2.new(0, 255, 0, 65) Grid.CellPadding = UDim2.new(0, 15, 0, 15) Grid.Parent = TabPage
+
+    TabButton.MouseButton1Click:Connect(function()
+        for _, v in pairs(Container:GetChildren()) do if v:IsA("ScrollingFrame") then v.Visible = false end end
+        for _, v in pairs(Sidebar:GetChildren()) do if v:IsA("TextButton") then v.BackgroundColor3 = Color3.fromRGB(28, 24, 40) v.TextColor3 = Color3.fromRGB(150, 150, 150) end end
+        TabPage.Visible = true; TabButton.BackgroundColor3 = Color3.fromRGB(55, 25, 95); TabButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+    end)
+    FirstTab = false; return TabPage
+end
+
+local function CreateToggle(parent, title, desc, callback)
+    local ToggleFrame = Instance.new("Frame") ToggleFrame.BackgroundColor3 = Color3.fromRGB(24, 20, 36) ToggleFrame.Parent = parent
+    local Corner = Instance.new("UICorner") Corner.CornerRadius = UDim.new(0, 8) Corner.Parent = ToggleFrame
+
+    local tLabel = Instance.new("TextLabel") tLabel.Size = UDim2.new(1, -60, 0, 20) tLabel.Position = UDim2.new(0, 15, 0, 10) tLabel.Text = title tLabel.Font = Enum.Font.GothamBold; tLabel.TextSize = 13; tLabel.TextColor3 = Color3.fromRGB(240, 240, 240); tLabel.TextXAlignment = Enum.TextXAlignment.Left; tLabel.BackgroundTransparency = 1; tLabel.Parent = ToggleFrame
+    local dLabel = Instance.new("TextLabel") dLabel.Size = UDim2.new(1, -60, 0, 15) dLabel.Position = UDim2.new(0, 15, 0, 30) dLabel.Text = desc dLabel.Font = Enum.Font.Gotham; dLabel.TextSize = 10; dLabel.TextColor3 = Color3.fromRGB(130, 130, 140); dLabel.TextXAlignment = Enum.TextXAlignment.Left; dLabel.BackgroundTransparency = 1; dLabel.Parent = ToggleFrame
+
+    local Switch = Instance.new("TextButton") Switch.Size = UDim2.new(0, 40, 0, 22) Switch.Position = UDim2.new(1, -50, 0, 21) Switch.BackgroundColor3 = Color3.fromRGB(45, 40, 60) Switch.Text = ""; Switch.Parent = ToggleFrame
+    local SCorner = Instance.new("UICorner") SCorner.CornerRadius = UDim.new(1, 0) SCorner.Parent = Switch
+    local Circle = Instance.new("Frame") Circle.Size = UDim2.new(0, 16, 0, 16) Circle.Position = UDim2.new(0, 3, 0, 3) Circle.BackgroundColor3 = Color3.fromRGB(255, 255, 255) Circle.Parent = Switch
+    local CCorner = Instance.new("UICorner") CCorner.CornerRadius = UDim.new(1, 0) CCorner.Parent = Circle
+
+    local active = false
+    Switch.MouseButton1Click:Connect(function()
+        active = not active
+        TweenService:Create(Circle, TweenInfo.new(0.2), {Position = active and UDim2.new(1, -19, 0, 3) or UDim2.new(0, 3, 0, 3)}):Play()
+        TweenService:Create(Switch, TweenInfo.new(0.2), {BackgroundColor3 = active and Color3.fromRGB(140, 60, 255) or Color3.fromRGB(45, 40, 60)}):Play()
+        pcall(callback, active)
+    end)
+end
+
+local function CreateSlider(parent, title, min, max, default, callback)
+    local SliderFrame = Instance.new("Frame") SliderFrame.BackgroundColor3 = Color3.fromRGB(24, 20, 36) SliderFrame.Parent = parent
+    local Corner = Instance.new("UICorner") Corner.CornerRadius = UDim.new(0, 8) Corner.Parent = SliderFrame
+
+    local tLabel = Instance.new("TextLabel") tLabel.Size = UDim2.new(1, -60, 0, 20) tLabel.Position = UDim2.new(0, 15, 0, 8) tLabel.Text = title .. " : " .. tostring(default) tLabel.Font = Enum.Font.GothamBold; tLabel.TextSize = 13; tLabel.TextColor3 = Color3.fromRGB(240, 240, 240); tLabel.TextXAlignment = Enum.TextXAlignment.Left; tLabel.BackgroundTransparency = 1; tLabel.Parent = SliderFrame
+
+    local SlideBar = Instance.new("TextButton") SlideBar.Size = UDim2.new(1, -30, 0, 6) SlideBar.Position = UDim2.new(0, 15, 0, 40) SlideBar.BackgroundColor3 = Color3.fromRGB(45, 40, 60) SlideBar.Text = "" SlideBar.Parent = SliderFrame
+    local SBCorner = Instance.new("UICorner") SBCorner.CornerRadius = UDim.new(1, 0) SBCorner.Parent = SlideBar
+
+    local Fill = Instance.new("Frame") Fill.Size = UDim2.new((default - min)/(max - min), 0, 1, 0) Fill.BackgroundColor3 = Color3.fromRGB(140, 60, 255) Fill.BorderSizePixel = 0 Fill.Parent = SlideBar
+    local FCorner = Instance.new("UICorner") FCorner.CornerRadius = UDim.new(1, 0) FCorner.Parent = Fill
+
+    local function updateSlider(input)
+        local percentage = math.clamp((input.Position.X - SlideBar.AbsolutePosition.X) / SlideBar.AbsoluteSize.X, 0, 1)
+        local value = math.floor(min + (max - min) * percentage)
+        tLabel.Text = title .. " : " .. tostring(value)
+        Fill.Size = UDim2.new(percentage, 0, 1, 0)
+        pcall(callback, value)
+    end
+
+    local sliding = false
+    SlideBar.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then sliding = true updateSlider(input) end
+    end)
+    UserInputService.InputChanged:Connect(function(input)
+        if sliding and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then updateSlider(input) end
+    end)
+    UserInputService.InputEnded:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then sliding = false end
+    end)
+end
+
+local function CreateButton(parent, title, desc, callback)
+    local Frame = Instance.new("Frame") Frame.BackgroundColor3 = Color3.fromRGB(24, 20, 36) Frame.Parent = parent
+    local Corner = Instance.new("UICorner") Corner.CornerRadius = UDim.new(0, 8) Corner.Parent = Frame
+
+    local tLabel = Instance.new("TextLabel") tLabel.Size = UDim2.new(1, -100, 0, 20) tLabel.Position = UDim2.new(0, 15, 0, 10) tLabel.Text = title tLabel.Font = Enum.Font.GothamBold; tLabel.TextSize = 13; tLabel.TextColor3 = Color3.fromRGB(240, 240, 240); tLabel.TextXAlignment = Enum.TextXAlignment.Left; tLabel.BackgroundTransparency = 1; tLabel.Parent = Frame
+    local dLabel = Instance.new("TextLabel") dLabel.Size = UDim2.new(1, -100, 0, 15) dLabel.Position = UDim2.new(0, 15, 0, 30) dLabel.Text = desc dLabel.Font = Enum.Font.Gotham; dLabel.TextSize = 10; dLabel.TextColor3 = Color3.fromRGB(130, 130, 140); dLabel.TextXAlignment = Enum.TextXAlignment.Left; dLabel.BackgroundTransparency = 1; dLabel.Parent = Frame
+
+    local Btn = Instance.new("TextButton") Btn.Size = UDim2.new(0, 70, 0, 30) Btn.Position = UDim2.new(1, -80, 0, 17) Btn.BackgroundColor3 = Color3.fromRGB(55, 25, 95) Btn.Text = "EXECUTE" Btn.Font = Enum.Font.GothamBold; Btn.TextColor3 = Color3.fromRGB(255, 255, 255); Btn.TextSize = 10; Btn.Parent = Frame
+    local BCorner = Instance.new("UICorner") BCorner.CornerRadius = UDim.new(0, 6) BCorner.Parent = Btn
+
+    Btn.MouseButton1Click:Connect(function() pcall(callback) end)
+end
+
+-- ====================================================================
+-- TAB SETUP & FUNCTIONALITIES
+-- ====================================================================
+local MainTab = CreateTab("Main")
+local RPTab = CreateTab("Roleplay")
+
+-- --- SLIDERS ---
+CreateSlider(MainTab, "WALK SPEED", 16, 250, 16, function(val)
+    States.WalkSpeed = val
+    if LocalPlayer.Character and LocalPlayer.Character:FindFirstChildOfClass("Humanoid") then
+        LocalPlayer.Character:FindFirstChildOfClass("Humanoid").WalkSpeed = val
+    end
+end)
+
+CreateSlider(MainTab, "JUMP POWER", 50, 300, 50, function(val)
+    States.JumpPower = val
+    if LocalPlayer.Character and LocalPlayer.Character:FindFirstChildOfClass("Humanoid") then
+        local hum = LocalPlayer.Character:FindFirstChildOfClass("Humanoid")
+        hum.UseJumpPower = true
+        hum.JumpPower = val
+    end
+end)
+
+-- Loop para mapanatili ang Bilis at Talon kahit mag-respawn
+RunService.RenderStepped:Connect(function()
+    if LocalPlayer.Character and LocalPlayer.Character:FindFirstChildOfClass("Humanoid") then
+        local hum = LocalPlayer.Character:FindFirstChildOfClass("Humanoid")
+        if hum.WalkSpeed ~= States.WalkSpeed and States.WalkSpeed ~= 16 then hum.WalkSpeed = States.WalkSpeed end
+        if hum.JumpPower ~= States.JumpPower and States.JumpPower ~= 50 then hum.UseJumpPower = true hum.JumpPower = States.JumpPower end
+    end
+end)
+
+-- --- TOGGLES ---
+-- 1. Infinite Jump
+UserInputService.JumpRequest:Connect(function()
+    if States.InfJump and LocalPlayer.Character and LocalPlayer.Character:FindFirstChildOfClass("Humanoid") then
+        LocalPlayer.Character:FindFirstChildOfClass("Humanoid"):ChangeState(Enum.HumanoidStateType.Jumping)
+    end
+end)
+CreateToggle(MainTab, "INFINITY JUMP", "Jump without limitations", function(state) States.InfJump = state end)
+
+-- 2. Noclip
+RunService.Stepped:Connect(function()
+    if States.Noclip and LocalPlayer.Character then
+        for _, part in pairs(LocalPlayer.Character:GetDescendants()) do
+            if part:IsA("BasePart") then part.CanCollide = false end
+        end
+    end
+end)
+CreateToggle(MainTab, "NOCLIP", "Walk through structures/walls", function(state) States.Noclip = state end)
+
+-- 3. Fly
+local flyBodyGyro, flyBodyVelocity
+CreateToggle(MainTab, "FLY", "Fly around the map freely", function(state)
+    States.Fly = state
+    if state then
+        local char = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+        local root = char:WaitForChild("HumanoidRootPart")
+        
+        flyBodyGyro = Instance.new("BodyGyro", root)
+        flyBodyGyro.P = 9e4
+        flyBodyGyro.maxTorque = Vector3.new(9e9, 9e9, 9e9)
+        flyBodyGyro.cframe = root.CFrame
+        
+        flyBodyVelocity = Instance.new("BodyVelocity", root)
+        flyBodyVelocity.velocity = Vector3.new(0, 0.1, 0)
+        flyBodyVelocity.maxForce = Vector3.new(9e9, 9e9, 9e9)
+        
+        task.spawn(function()
+            local camera = workspace.CurrentCamera
+            while States.Fly and char and root and flyBodyVelocity and flyBodyGyro do
+                runTime = RunService.RenderStepped:Wait()
+                local moveDirection = char:FindFirstChildOfClass("Humanoid").MoveDirection
+                local velocity = Vector3.new(0, 0, 0)
+                
+                if UserInputService:IsKeyDown(Enum.KeyCode.W) then velocity = velocity + camera.CFrame.LookVector end
+                if UserInputService:IsKeyDown(Enum.KeyCode.S) then velocity = velocity - camera.CFrame.LookVector end
+                if UserInputService:IsKeyDown(Enum.KeyCode.A) then velocity = velocity - camera.CFrame.RightVector end
+                if UserInputService:IsKeyDown(Enum.KeyCode.D) then velocity = velocity + camera.CFrame.RightVector end
+                if UserInputService:IsKeyDown(Enum.KeyCode.Space) then velocity = velocity + Vector3.new(0, 1, 0) end
+                if UserInputService:IsKeyDown(Enum.KeyCode.LeftShift) then velocity = velocity - Vector3.new(0, 1, 0) end
+                
+                flyBodyVelocity.velocity = velocity.Unit * (States.WalkSpeed * 2)
+                flyBodyGyro.cframe = camera.CFrame
+                if velocity == Vector3.new(0,0,0) then flyBodyVelocity.velocity = Vector3.new(0,0,0) end
+            end
+        end)
+    else
+        if flyBodyGyro then flyBodyGyro:Destroy() end
+        if flyBodyVelocity then flyBodyVelocity:Destroy() end
+    end
+end)
+
+-- 4. Simple Visual ESP
+local espHighlightFolder = Instance.new("Folder", workspace) espHighlightFolder.Name = "13ST_ESP"
+CreateToggle(MainTab, "PLAYER ESP", "Highlights other active players", function(state)
+    States.ESP = state
+    espHighlightFolder:ClearAllChildren()
+    if state then
+        task.spawn(function()
+            while States.ESP do
+                for _, p in pairs(Players:GetPlayers()) do
+                    if p ~= LocalPlayer and p.Character and not espHighlightFolder:FindFirstChild(p.Name) then
+                        local highlight = Instance.new("Highlight")
+                        highlight.Name = p.Name
+                        highlight.FillColor = Color3.fromRGB(140, 60, 255)
+                        highlight.OutlineColor = Color3.fromRGB(255, 255, 255)
+                        highlight.Adornee = p.Character
+                        highlight.Parent = espHighlightFolder
+                    end
+                end
+                task.wait(1)
+            end
+        end)
+    else
+        espHighlightFolder:ClearAllChildren()
+    end
+end)
+
+-- ====================================================================
+-- ROLEPLAY TAB BUTTONS (Universal SRP Utilities)
+-- ====================================================================
+
+CreateButton(RPTab, "TELEPORT TO SEAT", "Teleport directly inside nearby vehicle", function()
+    local char = LocalPlayer.Character
+    if char and char:FindFirstChild("HumanoidRootPart") then
+        for _, v in pairs(workspace:GetDescendants()) do
+            if v:IsA("VehicleSeat") and not v.Occupant then
+                v:Sit(char:FindFirstChildOfClass("Humanoid"))
+                break
+            end
+        end
+    end
+end)
+
+CreateButton(RPTab, "CLICK TELEPORT (CTRL)", "Hold CTRL + Click to teleport anywhere", function()
+    local mouse = LocalPlayer:GetMouse()
+    mouse.Button1Down:Connect(function()
+        if UserInputService:IsKeyDown(Enum.KeyCode.LeftControl) and mouse.Target then
+            if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
+                LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(mouse.Hit.Position + Vector3.new(0, 3, 0))
+            end
+        end
+    end)
+end)
+
+CreateButton(RPTab, "BRING UNANCHORED", "Pull dropped items or unanchored objects", function()
+    if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
+        local root = LocalPlayer.Character.HumanoidRootPart
+        for _, v in pairs(workspace:GetChildren()) do
+            if v:IsA("Part") and not v.Anchored then
+                v.CFrame = root.CFrame + Vector3.new(0, 2, 0)
+            end
+        end
+    end
+end)
+
+CreateButton(RPTab, "REGENERATE CHARACTER", "Instantly resets character to clear bugs", function()
+    if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
+        LocalPlayer.Character:FindFirstChildOfClass("Humanoid").Health = 0
+    end
+end)
